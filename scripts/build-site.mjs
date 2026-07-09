@@ -9,9 +9,9 @@ const outDir = path.join(root, "docs");
 const stylesPath = path.join(root, "src", "styles", "site.css");
 
 const site = {
-  title: "MeMe",
-  description: "日常生活、片段和一些慢慢留下来的记录。",
-  author: "MeMe"
+  title: "Mebug",
+  description: "把日常、花草、片段和一点点心事慢慢记录下来。",
+  author: "Mebug"
 };
 
 await build();
@@ -52,6 +52,7 @@ async function loadPosts() {
     if (data.draft === true || data.status === "draft") continue;
 
     const title = data.title || titleFromFilename(file);
+    const dateOnly = isDateOnly(data.date);
     const date = parseDate(data.date);
     const slug = uniqueSlug(data.slug || slugify(path.basename(file, path.extname(file)) || title), posts);
 
@@ -60,9 +61,10 @@ async function loadPosts() {
       slug,
       date,
       timestamp: date.getTime(),
-      displayDate: formatDate(date),
-      monthKey: formatMonthKey(date),
-      monthLabel: formatMonthLabel(date),
+      displayDate: formatDate(date, dateOnly),
+      datetime: dateOnly ? formatDateKey(date) : date.toISOString(),
+      yearKey: formatYearKey(date),
+      yearLabel: formatYearLabel(date),
       tags: Array.isArray(data.tags) ? data.tags : [],
       summary: data.summary || excerptFromMarkdown(body),
       cover: data.cover || "",
@@ -99,6 +101,8 @@ async function copyDir(from, to) {
   await mkdir(to, { recursive: true });
 
   for (const entry of entries) {
+    if (entry.name === ".DS_Store") continue;
+
     const src = path.join(from, entry.name);
     const dest = path.join(to, entry.name);
     if (entry.isDirectory()) {
@@ -110,27 +114,27 @@ async function copyDir(from, to) {
 }
 
 function renderHome(posts) {
-  const months = groupByMonth(posts);
+  const years = groupByYear(posts);
   const content = posts.length
-    ? `<main class="month-stream" id="monthStream">
-        ${months.map((month, index) => renderMonth(month, index)).join("")}
-        ${months.length > 2 ? `<button class="load-more" id="loadMore" type="button">加载更多月份</button>` : ""}
+    ? `<main class="year-stream" id="yearStream">
+        ${years.map((year, index) => renderYear(year, index)).join("")}
+        ${years.length > 2 ? `<button class="load-more" id="loadMore" type="button">加载更多年份</button>` : ""}
       </main>
       <script>
-        const hiddenMonths = Array.from(document.querySelectorAll(".is-hidden-month"));
+        const hiddenYears = Array.from(document.querySelectorAll(".is-hidden-year"));
         const button = document.getElementById("loadMore");
-        let nextMonth = 0;
-        function revealMonth() {
-          for (let i = 0; i < 1 && nextMonth < hiddenMonths.length; i += 1) {
-            hiddenMonths[nextMonth].classList.remove("is-hidden-month");
-            nextMonth += 1;
+        let nextYear = 0;
+        function revealYear() {
+          for (let i = 0; i < 1 && nextYear < hiddenYears.length; i += 1) {
+            hiddenYears[nextYear].classList.remove("is-hidden-year");
+            nextYear += 1;
           }
-          if (button && nextMonth >= hiddenMonths.length) button.remove();
+          if (button && nextYear >= hiddenYears.length) button.remove();
         }
-        if (button) button.addEventListener("click", revealMonth);
+        if (button) button.addEventListener("click", revealYear);
         if (button) {
           const observer = new IntersectionObserver((entries) => {
-            if (entries.some((entry) => entry.isIntersecting)) revealMonth();
+            if (entries.some((entry) => entry.isIntersecting)) revealYear();
           }, { rootMargin: "240px" });
           observer.observe(button);
         }
@@ -151,15 +155,15 @@ function renderHome(posts) {
   });
 }
 
-function renderMonth(month, index) {
+function renderYear(year, index) {
   return `
-    <section class="month-section ${index > 1 ? "is-hidden-month" : ""}" data-month="${escapeHtml(month.key)}">
-      <div class="month-heading">
-        <h2>${escapeHtml(month.label)}</h2>
-        <span>${month.posts.length} 篇</span>
+    <section class="year-section ${index > 1 ? "is-hidden-year" : ""}" data-year="${escapeHtml(year.key)}">
+      <div class="year-heading">
+        <h2>${escapeHtml(year.label)}</h2>
+        <span>${year.posts.length} 篇</span>
       </div>
       <div class="post-grid">
-        ${month.posts.map(renderPostCard).join("")}
+        ${year.posts.map(renderPostCard).join("")}
       </div>
     </section>
   `;
@@ -170,7 +174,7 @@ function renderPostCard(post) {
     <a class="post-card" href="posts/${encodeURIComponent(post.slug)}/">
       ${post.cover ? `<img class="post-cover" src="${escapeAttribute(assetUrl(post.cover, 0))}" alt="">` : ""}
       <div class="post-card-body">
-        <time class="post-date" datetime="${post.date.toISOString()}">${escapeHtml(post.displayDate)}</time>
+        <time class="post-date" datetime="${escapeAttribute(post.datetime)}">${escapeHtml(post.displayDate)}</time>
         <h3>${escapeHtml(post.title)}</h3>
         <p class="post-excerpt">${escapeHtml(post.summary)}</p>
         ${renderTags(post.tags)}
@@ -194,7 +198,7 @@ function renderPost(post, posts) {
             <p class="eyebrow">Daily Note</p>
             <h1>${escapeHtml(post.title)}</h1>
             <div class="article-meta">
-              <time datetime="${post.date.toISOString()}">${escapeHtml(post.displayDate)}</time>
+              <time datetime="${escapeAttribute(post.datetime)}">${escapeHtml(post.displayDate)}</time>
             </div>
             ${renderTags(post.tags)}
             ${post.cover ? `<img class="article-cover" src="${escapeAttribute(assetUrl(post.cover, 2))}" alt="">` : ""}
@@ -221,6 +225,8 @@ function page({ title, description, body }, depth = 0) {
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>${escapeHtml(title)}</title>
     <meta name="description" content="${escapeAttribute(description)}">
+    <link rel="icon" type="image/png" href="${prefix}favicon.png">
+    <link rel="apple-touch-icon" href="${prefix}favicon.png">
     <link rel="stylesheet" href="${prefix}assets/site.css">
   </head>
   <body>
@@ -228,8 +234,8 @@ function page({ title, description, body }, depth = 0) {
       <header class="site-header">
         <nav class="nav" aria-label="主导航">
           <a class="brand" href="${prefix}">
-            <span class="brand-mark">M</span>
-            <span>${escapeHtml(site.title)}</span>
+            <img class="brand-logo" src="${prefix}brand/logo-mark.png" alt="">
+            <span class="brand-name">${escapeHtml(site.title)}</span>
           </a>
           <div class="nav-links">
             <a href="${prefix}">文章</a>
@@ -262,6 +268,7 @@ function rewriteContentUrls(html, depth) {
 }
 
 function parseFrontmatter(source) {
+  source = source.replace(/^\uFEFF/, "");
   if (!source.startsWith("---")) return { data: {}, body: source.trim() };
   const match = source.match(/^---\s*\n([\s\S]*?)\n---\s*\n?/);
   if (!match) return { data: {}, body: source.trim() };
@@ -295,28 +302,44 @@ function unquote(value) {
 }
 
 function markdownToHtml(markdown) {
-  const lines = markdown.replace(/\r\n/g, "\n").split("\n");
+  const lines = markdown.replace(/^\uFEFF/, "").replace(/\r\n/g, "\n").split("\n");
   const html = [];
   let paragraph = [];
-  let list = [];
+  let list = null;
+  let images = [];
   let inCode = false;
   let code = [];
   let codeLang = "";
 
   const flushParagraph = () => {
     if (!paragraph.length) return;
-    html.push(`<p>${inlineMarkdown(paragraph.join(" "))}</p>`);
+    const text = paragraph.join(" ");
+    const strongOnly = text.match(/^\*\*(.+?)\*\*$/);
+    if (strongOnly) {
+      html.push(`<h4>${inlineMarkdown(strongOnly[1])}</h4>`);
+    } else {
+      html.push(`<p>${inlineMarkdown(text)}</p>`);
+    }
     paragraph = [];
   };
 
   const flushList = () => {
-    if (!list.length) return;
-    html.push(`<ul>${list.map((item) => `<li>${inlineMarkdown(item)}</li>`).join("")}</ul>`);
-    list = [];
+    if (!list || !list.items.length) return;
+    const items = list.items
+      .map((item) => `<li${item.indent ? ` data-indent="${item.indent}"` : ""}>${inlineMarkdown(item.text)}</li>`)
+      .join("");
+    html.push(`<${list.type}>${items}</${list.type}>`);
+    list = null;
+  };
+
+  const flushImages = () => {
+    if (!images.length) return;
+    html.push(`<div class="photo-grid">${images.join("")}</div>`);
+    images = [];
   };
 
   for (const line of lines) {
-    const fence = line.match(/^```(.*)$/);
+    const fence = line.match(/^(```|''')\s*(.*)$/);
     if (fence) {
       if (inCode) {
         html.push(`<pre><code${codeLang ? ` class="language-${escapeAttribute(codeLang)}"` : ""}>${escapeHtml(code.join("\n"))}</code></pre>`);
@@ -326,8 +349,9 @@ function markdownToHtml(markdown) {
       } else {
         flushParagraph();
         flushList();
+        flushImages();
         inCode = true;
-        codeLang = fence[1].trim();
+        codeLang = /^[A-Za-z0-9_-]+$/.test(fence[2].trim()) ? fence[2].trim() : "";
       }
       continue;
     }
@@ -343,18 +367,20 @@ function markdownToHtml(markdown) {
       continue;
     }
 
-    const heading = line.match(/^(#{1,3})\s+(.+)$/);
+    const heading = line.match(/^(#{1,5})\s+(.+)$/);
     if (heading) {
       flushParagraph();
       flushList();
+      flushImages();
       const level = heading[1].length;
       html.push(`<h${level}>${inlineMarkdown(heading[2])}</h${level}>`);
       continue;
     }
 
-    if (/^---+$/.test(line.trim())) {
+    if (/^-{3,}$/.test(line.trim())) {
       flushParagraph();
       flushList();
+      flushImages();
       html.push("<hr>");
       continue;
     }
@@ -363,33 +389,66 @@ function markdownToHtml(markdown) {
     if (quote) {
       flushParagraph();
       flushList();
+      flushImages();
       html.push(`<blockquote><p>${inlineMarkdown(quote[1])}</p></blockquote>`);
       continue;
     }
 
-    const bullet = line.match(/^[-*]\s+(.+)$/);
-    if (bullet) {
+    const unordered = line.match(/^(\s*)[-*]\s+(.+)$/);
+    if (unordered) {
       flushParagraph();
-      list.push(bullet[1]);
+      flushImages();
+      pushListItem("ul", unordered[2], indentLevel(unordered[1]));
       continue;
     }
 
+    const ordered = line.match(/^(\s*)(?:\d+[.)、]|[（(]\d+[）)])\s*(.+)$/);
+    if (ordered) {
+      flushParagraph();
+      flushImages();
+      pushListItem("ol", ordered[2], indentLevel(ordered[1]));
+      continue;
+    }
+
+    const image = line.trim().match(/^[!！]\[([^\]]*)\]\(([^)]+)\)$/);
+    if (image) {
+      flushParagraph();
+      flushList();
+      images.push(`<figure><img src="${escapeAttribute(image[2])}" alt="${escapeAttribute(image[1])}"></figure>`);
+      continue;
+    }
+
+    flushImages();
     paragraph.push(line.trim());
   }
 
   flushParagraph();
   flushList();
+  flushImages();
 
   return html.join("\n");
+
+  function pushListItem(type, text, indent) {
+    if (!list || list.type !== type) {
+      flushList();
+      list = { type, items: [] };
+    }
+    list.items.push({ text, indent });
+  }
 }
 
 function inlineMarkdown(text) {
   return escapeHtml(text)
-    .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, `<img src="$2" alt="$1">`)
+    .replace(/[!！]\[([^\]]*)\]\(([^)]+)\)/g, `<img src="$2" alt="$1">`)
     .replace(/\[([^\]]+)\]\(([^)]+)\)/g, `<a href="$2">$1</a>`)
     .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
     .replace(/\*([^*]+)\*/g, "<em>$1</em>")
-    .replace(/`([^`]+)`/g, "<code>$1</code>");
+    .replace(/`([^`]+)`/g, "<code>$1</code>")
+    .replace(/(^|[^\w])'([^'\n]+)'(?=[^\w]|$)/g, "$1<code>$2</code>");
+}
+
+function indentLevel(spaces) {
+  return Math.min(3, Math.floor(String(spaces || "").replace(/\t/g, "    ").length / 4));
 }
 
 function renderTags(tags) {
@@ -397,13 +456,13 @@ function renderTags(tags) {
   return `<div class="tag-row">${tags.map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`).join("")}</div>`;
 }
 
-function groupByMonth(posts) {
+function groupByYear(posts) {
   const groups = new Map();
   for (const post of posts) {
-    if (!groups.has(post.monthKey)) {
-      groups.set(post.monthKey, { key: post.monthKey, label: post.monthLabel, posts: [] });
+    if (!groups.has(post.yearKey)) {
+      groups.set(post.yearKey, { key: post.yearKey, label: post.yearLabel, posts: [] });
     }
-    groups.get(post.monthKey).posts.push(post);
+    groups.get(post.yearKey).posts.push(post);
   }
   return Array.from(groups.values());
 }
@@ -445,30 +504,46 @@ function uniqueSlug(slug, posts) {
 
 function parseDate(value) {
   if (!value) return new Date();
+  if (isDateOnly(value)) {
+    const [year, month, day] = String(value).split("-").map(Number);
+    return new Date(year, month - 1, day);
+  }
   const date = new Date(String(value).replace(" ", "T"));
   if (Number.isNaN(date.getTime())) return new Date();
   return date;
 }
 
-function formatDate(date) {
-  return new Intl.DateTimeFormat("zh-CN", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit"
-  }).format(date);
+function isDateOnly(value) {
+  return /^\d{4}-\d{2}-\d{2}$/.test(String(value || "").trim());
 }
 
-function formatMonthKey(date) {
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+function formatDate(date, dateOnly = false) {
+  const options = dateOnly
+    ? {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit"
+      }
+    : {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit"
+      };
+  return new Intl.DateTimeFormat("zh-CN", options).format(date);
 }
 
-function formatMonthLabel(date) {
-  return new Intl.DateTimeFormat("zh-CN", {
-    year: "numeric",
-    month: "long"
-  }).format(date);
+function formatDateKey(date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+
+function formatYearKey(date) {
+  return String(date.getFullYear());
+}
+
+function formatYearLabel(date) {
+  return `${date.getFullYear()}年`;
 }
 
 function escapeHtml(value) {

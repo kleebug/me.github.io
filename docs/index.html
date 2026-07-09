@@ -3,8 +3,10 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>MeMe</title>
-    <meta name="description" content="日常生活、片段和一些慢慢留下来的记录。">
+    <title>Mebug</title>
+    <meta name="description" content="把日常、花草、片段和一点点心事慢慢记录下来。">
+    <link rel="icon" type="image/png" href="./favicon.png">
+    <link rel="apple-touch-icon" href="./favicon.png">
     <link rel="stylesheet" href="./assets/site.css">
   </head>
   <body>
@@ -12,8 +14,8 @@
       <header class="site-header">
         <nav class="nav" aria-label="主导航">
           <a class="brand" href="./">
-            <span class="brand-mark">M</span>
-            <span>MeMe</span>
+            <img class="brand-logo" src="./brand/logo-mark.png" alt="">
+            <span class="brand-name">Mebug</span>
           </a>
           <div class="nav-links">
             <a href="./">文章</a>
@@ -23,25 +25,45 @@
       
       <section class="intro">
         <p class="eyebrow">Daily Notes</p>
-        <h1>MeMe</h1>
-        <p>日常生活、片段和一些慢慢留下来的记录。</p>
+        <h1>Mebug</h1>
+        <p>把日常、花草、片段和一点点心事慢慢记录下来。</p>
       </section>
-      <main class="month-stream" id="monthStream">
+      <main class="year-stream" id="yearStream">
         
-    <section class="month-section " data-month="2026-07">
-      <div class="month-heading">
-        <h2>2026年7月</h2>
-        <span>1 篇</span>
+    <section class="year-section " data-year="2025">
+      <div class="year-heading">
+        <h2>2025年</h2>
+        <span>3 篇</span>
       </div>
       <div class="post-grid">
         
-    <a class="post-card" href="posts/2026-07-09-first-note/">
+    <a class="post-card" href="posts/%E6%98%A8%E6%99%9A%E5%81%9A%E4%BA%86%E4%B8%AA%E5%99%A9%E6%A2%A6/">
       
       <div class="post-card-body">
-        <time class="post-date" datetime="2026-07-09T06:30:00.000Z">2026/07/09 14:30</time>
-        <h3>第一篇日常记录</h3>
-        <p class="post-excerpt">给这个小站留一个开始的位置。以后新的生活记录会安静地长在这里。</p>
-        <div class="tag-row"><span class="tag">日常</span><span class="tag">开始</span></div>
+        <time class="post-date" datetime="2025-07-17">2025/07/17</time>
+        <h3>昨晚做了个噩梦</h3>
+        <p class="post-excerpt">前晚做了个噩梦 前天晚上做了个噩梦，把自己梦醒时心还在砰砰直跳，梦中的画面和场景十分吓人，以至于醒来之后好一会都无法再入睡。 早上起来之后整理了心情，把梦中的情景做了描述然后咨询了Deepse...</p>
+        <div class="tag-row"><span class="tag">梦境</span><span class="tag">生活记录</span></div>
+      </div>
+    </a>
+  
+    <a class="post-card" href="posts/25%E5%B9%B41%E6%9C%88%E5%B0%8F%E7%BB%93/">
+      
+      <div class="post-card-body">
+        <time class="post-date" datetime="2025-02-07">2025/02/07</time>
+        <h3>25年1月小结</h3>
+        <p class="post-excerpt">拖延症还是没有改善的我，现在才来做1月的总结。 1月回顾 这是一月份的生活日历，状态感觉还行吧，有两个消极日hhhh 两个消极日都在放假前，因为放假前我司要做年度总结和计划。 虽然待过的企业不...</p>
+        <div class="tag-row"><span class="tag">月度小结</span><span class="tag">生活记录</span></div>
+      </div>
+    </a>
+  
+    <a class="post-card" href="posts/24%E5%B9%B4%E5%B9%B4%E7%BB%88%E6%80%BB%E7%BB%93/">
+      
+      <div class="post-card-body">
+        <time class="post-date" datetime="2025-01-14">2025/01/14</time>
+        <h3>24年年终总结</h3>
+        <p class="post-excerpt">非常开心，K小站上线的节点在24年的尾班车，正好赶上24年度总结，而我的总结发布在线上😁。(不过实际发布还是在25年了，因为年底有点忙，因为拖延症比较严重，没静下来好好做总结) K小站的起源...</p>
+        <div class="tag-row"><span class="tag">年度总结</span><span class="tag">生活记录</span></div>
       </div>
     </a>
   
@@ -51,27 +73,27 @@
         
       </main>
       <script>
-        const hiddenMonths = Array.from(document.querySelectorAll(".is-hidden-month"));
+        const hiddenYears = Array.from(document.querySelectorAll(".is-hidden-year"));
         const button = document.getElementById("loadMore");
-        let nextMonth = 0;
-        function revealMonth() {
-          for (let i = 0; i < 1 && nextMonth < hiddenMonths.length; i += 1) {
-            hiddenMonths[nextMonth].classList.remove("is-hidden-month");
-            nextMonth += 1;
+        let nextYear = 0;
+        function revealYear() {
+          for (let i = 0; i < 1 && nextYear < hiddenYears.length; i += 1) {
+            hiddenYears[nextYear].classList.remove("is-hidden-year");
+            nextYear += 1;
           }
-          if (button && nextMonth >= hiddenMonths.length) button.remove();
+          if (button && nextYear >= hiddenYears.length) button.remove();
         }
-        if (button) button.addEventListener("click", revealMonth);
+        if (button) button.addEventListener("click", revealYear);
         if (button) {
           const observer = new IntersectionObserver((entries) => {
-            if (entries.some((entry) => entry.isIntersecting)) revealMonth();
+            if (entries.some((entry) => entry.isIntersecting)) revealYear();
           }, { rootMargin: "240px" });
           observer.observe(button);
         }
       </script>
     
       <footer class="site-footer">
-        <span>© 2026 MeMe. Built from Markdown.</span>
+        <span>© 2026 Mebug. Built from Markdown.</span>
       </footer>
     </div>
   </body>
