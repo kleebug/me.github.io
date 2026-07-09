@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>MeMe</title>
+    <meta name="description" content="日常生活、片段和一些慢慢留下来的记录。">
+    <link rel="stylesheet" href="./assets/site.css">
+  </head>
+  <body>
+    <div class="site-shell">
+      <header class="site-header">
+        <nav class="nav" aria-label="主导航">
+          <a class="brand" href="./">
+            <span class="brand-mark">M</span>
+            <span>MeMe</span>
+          </a>
+          <div class="nav-links">
+            <a href="./">文章</a>
+          </div>
+        </nav>
+      </header>
+      
+      <section class="intro">
+        <p class="eyebrow">Daily Notes</p>
+        <h1>MeMe</h1>
+        <p>日常生活、片段和一些慢慢留下来的记录。</p>
+      </section>
+      <main class="month-stream" id="monthStream">
+        
+    <section class="month-section " data-month="2026-07">
+      <div class="month-heading">
+        <h2>2026年7月</h2>
+        <span>1 篇</span>
+      </div>
+      <div class="post-grid">
+        
+    <a class="post-card" href="posts/2026-07-09-first-note/">
+      
+      <div class="post-card-body">
+        <time class="post-date" datetime="2026-07-09T06:30:00.000Z">2026/07/09 14:30</time>
+        <h3>第一篇日常记录</h3>
+        <p class="post-excerpt">给这个小站留一个开始的位置。以后新的生活记录会安静地长在这里。</p>
+        <div class="tag-row"><span class="tag">日常</span><span class="tag">开始</span></div>
+      </div>
+    </a>
+  
+      </div>
+    </section>
+  
+        
+      </main>
+      <script>
+        const hiddenMonths = Array.from(document.querySelectorAll(".is-hidden-month"));
+        const button = document.getElementById("loadMore");
+        let nextMonth = 0;
+        function revealMonth() {
+          for (let i = 0; i < 1 && nextMonth < hiddenMonths.length; i += 1) {
+            hiddenMonths[nextMonth].classList.remove("is-hidden-month");
+            nextMonth += 1;
+          }
+          if (button && nextMonth >= hiddenMonths.length) button.remove();
+        }
+        if (button) button.addEventListener("click", revealMonth);
+        if (button) {
+          const observer = new IntersectionObserver((entries) => {
+            if (entries.some((entry) => entry.isIntersecting)) revealMonth();
+          }, { rootMargin: "240px" });
+          observer.observe(button);
+        }
+      </script>
+    
+      <footer class="site-footer">
+        <span>© 2026 MeMe. Built from Markdown.</span>
+      </footer>
+    </div>
+  </body>
+</html>
