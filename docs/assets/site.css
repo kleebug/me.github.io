@@ -477,8 +477,8 @@ img {
 }
 
 .article-header {
-  margin: 0 auto 42px;
-  padding-bottom: 34px;
+  margin: 0 auto 20px;
+  padding-bottom: 0;
 }
 
 .article-header h1 {
@@ -1094,6 +1094,15 @@ img {
   font-size: 1.1rem;
 }
 
+.kleebug-article .info-box h4 {
+  display: block;
+  margin: 0 0 0.5rem;
+  padding: 0;
+  background: transparent;
+  color: #6a4c46;
+  font-size: 1.1rem;
+}
+
 .kleebug-article table {
   width: 100%;
   border-collapse: collapse;
@@ -1142,9 +1151,9 @@ img {
 }
 
 .kleebug-article .ending-note {
-  margin-top: 3rem;
+  margin-top: 0;
   padding-top: 2rem;
-  border-top: 2px solid #f3c2c6;
+  border-top: 0;
   text-align: center;
   color: #8a7c7a;
   font-size: 0.95rem;

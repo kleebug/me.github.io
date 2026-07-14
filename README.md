@@ -69,6 +69,7 @@ cover: "/images/walk.jpg"
 - 图片：`![图片描述](/images/example.jpg)` 或 `！[图片描述](/images/example.jpg)`
 - 高亮：`==重点文字==`
 - 信息框：使用 `::: info-box` 和 `:::` 包裹内容
+- 信息框也支持 `[!NOTE]`，下一行作为标题，后续内容作为说明
 - 文末小记：使用 `::: ending-note` 和 `:::` 包裹内容
 - 表格：使用标准 Markdown 表格语法
 - 图注：在图片链接中加入标题，例如 `![图片](/images/example.jpg "图注文字")`

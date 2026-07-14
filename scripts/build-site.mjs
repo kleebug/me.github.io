@@ -462,6 +462,21 @@ function markdownToHtml(markdown) {
       continue;
     }
 
+    if (line.trim() === "[!NOTE]") {
+      flushParagraph();
+      flushList();
+      flushImages();
+      const title = lines[lineIndex + 1]?.trim() || "说明";
+      const blockLines = [];
+      lineIndex += 2;
+      while (lineIndex < lines.length && lines[lineIndex].trim()) {
+        blockLines.push(lines[lineIndex]);
+        lineIndex += 1;
+      }
+      html.push(`<div class="info-box"><h4>${inlineMarkdown(title)}</h4>${markdownToHtml(blockLines.join("\n"))}</div>`);
+      continue;
+    }
+
     const nextLine = lines[lineIndex + 1] || "";
     if (line.includes("|") && isTableSeparator(nextLine)) {
       flushParagraph();
@@ -533,7 +548,9 @@ function markdownToHtml(markdown) {
     if (image) {
       flushParagraph();
       flushList();
-      images.push(`<figure><img src="${escapeAttribute(image[2])}" alt="${escapeAttribute(image[1])}">${image[3] ? `<figcaption>${inlineMarkdown(image[3])}</figcaption>` : ""}</figure>`);
+      const caption = image[3] || lines[lineIndex + 1]?.trim().match(/^\*([^*]+)\*$/)?.[1] || "";
+      if (!image[3] && caption) lineIndex += 1;
+      images.push(`<figure><img src="${escapeAttribute(image[2])}" alt="${escapeAttribute(image[1])}">${caption ? `<figcaption>${inlineMarkdown(caption)}</figcaption>` : ""}</figure>`);
       continue;
     }
 
@@ -577,6 +594,7 @@ function inlineMarkdown(text) {
     .replace(/\[([^\]]+)\]\(([^)]+)\)/g, `<a href="$2">$1</a>`)
     .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
     .replace(/\*([^*]+)\*/g, "<em>$1</em>")
+    .replace(/~~([^~]+)~~/g, "<del>$1</del>")
     .replace(/==([^=]+)==/g, "<span class=\"highlight\">$1</span>")
     .replace(/`([^`]+)`/g, "<code>$1</code>")
     .replace(/(^|[^\w])'([^'\n]+)'(?=[^\w]|$)/g, "$1<code>$2</code>");
