@@ -417,7 +417,8 @@ function markdownToHtml(markdown) {
     images = [];
   };
 
-  for (const line of lines) {
+  for (let lineIndex = 0; lineIndex < lines.length; lineIndex += 1) {
+    const line = lines[lineIndex];
     const fence = line.match(/^(```|''')\s*(.*)$/);
     if (fence) {
       if (inCode) {
@@ -443,6 +444,38 @@ function markdownToHtml(markdown) {
     if (!line.trim()) {
       flushParagraph();
       if (list) listSeparated = true;
+      continue;
+    }
+
+    const customBlock = line.match(/^:::\s*(info-box|ending-note)\s*$/i);
+    if (customBlock) {
+      flushParagraph();
+      flushList();
+      flushImages();
+      const blockLines = [];
+      lineIndex += 1;
+      while (lineIndex < lines.length && !/^:::\s*$/.test(lines[lineIndex].trim())) {
+        blockLines.push(lines[lineIndex]);
+        lineIndex += 1;
+      }
+      html.push(`<div class="${customBlock[1].toLowerCase()}">${markdownToHtml(blockLines.join("\n"))}</div>`);
+      continue;
+    }
+
+    const nextLine = lines[lineIndex + 1] || "";
+    if (line.includes("|") && isTableSeparator(nextLine)) {
+      flushParagraph();
+      flushList();
+      flushImages();
+      const header = splitTableRow(line);
+      const rows = [];
+      lineIndex += 2;
+      while (lineIndex < lines.length && lines[lineIndex].includes("|") && lines[lineIndex].trim()) {
+        rows.push(splitTableRow(lines[lineIndex]));
+        lineIndex += 1;
+      }
+      lineIndex -= 1;
+      html.push(renderTable(header, rows));
       continue;
     }
 
@@ -496,11 +529,11 @@ function markdownToHtml(markdown) {
       continue;
     }
 
-    const image = line.trim().match(/^[!！]\[([^\]]*)\]\(([^)]+)\)$/);
+    const image = line.trim().match(/^[!！]\[([^\]]*)\]\(([^)\s]+)(?:\s+["']([^"']+)["'])?\)$/);
     if (image) {
       flushParagraph();
       flushList();
-      images.push(`<figure><img src="${escapeAttribute(image[2])}" alt="${escapeAttribute(image[1])}"></figure>`);
+      images.push(`<figure><img src="${escapeAttribute(image[2])}" alt="${escapeAttribute(image[1])}">${image[3] ? `<figcaption>${inlineMarkdown(image[3])}</figcaption>` : ""}</figure>`);
       continue;
     }
 
@@ -544,8 +577,26 @@ function inlineMarkdown(text) {
     .replace(/\[([^\]]+)\]\(([^)]+)\)/g, `<a href="$2">$1</a>`)
     .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
     .replace(/\*([^*]+)\*/g, "<em>$1</em>")
+    .replace(/==([^=]+)==/g, "<span class=\"highlight\">$1</span>")
     .replace(/`([^`]+)`/g, "<code>$1</code>")
     .replace(/(^|[^\w])'([^'\n]+)'(?=[^\w]|$)/g, "$1<code>$2</code>");
+}
+
+function isTableSeparator(line) {
+  return /^\s*\|?\s*:?-{3,}:?\s*(?:\|\s*:?-{3,}:?\s*)+\|?\s*$/.test(line);
+}
+
+function splitTableRow(line) {
+  return line.trim().replace(/^\|/, "").replace(/\|$/, "").split("|").map((cell) => cell.trim());
+}
+
+function renderTable(header, rows) {
+  const renderCell = (cell) => inlineMarkdown(cell);
+  const renderedRows = rows.map((row) => {
+    const cells = header.map((_cell, index) => `<td>${renderCell(row[index] || "")}</td>`).join("");
+    return `<tr>${cells}</tr>`;
+  }).join("");
+  return `<table><thead><tr>${header.map((cell) => `<th>${renderCell(cell)}</th>`).join("")}</tr></thead><tbody>${renderedRows}</tbody></table>`;
 }
 
 function indentLevel(spaces) {

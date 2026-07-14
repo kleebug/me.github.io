@@ -67,6 +67,11 @@ cover: "/images/walk.jpg"
 - 缩进子项：在列表前输入 4 个空格
 - 链接：`[文字](https://example.com)`
 - 图片：`![图片描述](/images/example.jpg)` 或 `！[图片描述](/images/example.jpg)`
+- 高亮：`==重点文字==`
+- 信息框：使用 `::: info-box` 和 `:::` 包裹内容
+- 文末小记：使用 `::: ending-note` 和 `:::` 包裹内容
+- 表格：使用标准 Markdown 表格语法
+- 图注：在图片链接中加入标题，例如 `![图片](/images/example.jpg "图注文字")`
 - 代码块：使用 ``` 或 ''' 包裹
 
 连续单独插入的图片会自动排成图片网格。
