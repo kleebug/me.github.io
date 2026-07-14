@@ -68,6 +68,7 @@ async function loadPosts() {
       tags: Array.isArray(data.tags) ? data.tags : [],
       summary: data.summary || excerptFromMarkdown(body),
       cover: data.cover || "",
+      readingTime: readingTimeFromMarkdown(body),
       html: markdownToHtml(body)
     });
   }
@@ -146,9 +147,10 @@ function renderHome(posts) {
     description: site.description,
     body: `
       <section class="intro">
-        <p class="eyebrow">Daily Notes</p>
+        <div class="intro-kicker"><span class="intro-dot"></span><span>Daily Notes</span></div>
         <h1>${escapeHtml(site.title)}</h1>
         <p>${escapeHtml(site.description)}</p>
+        <div class="intro-meta"><span>${posts.length} 篇记录</span><span>持续更新中</span></div>
       </section>
       ${content}
     `
@@ -171,10 +173,10 @@ function renderYear(year, index) {
 
 function renderPostCard(post) {
   return `
-    <a class="post-card" href="posts/${encodeURIComponent(post.slug)}/">
+    <a class="post-card ${post.cover ? "has-cover" : ""}" href="posts/${encodeURIComponent(post.slug)}/">
       ${post.cover ? `<img class="post-cover" src="${escapeAttribute(assetUrl(post.cover, 0))}" alt="">` : ""}
       <div class="post-card-body">
-        <time class="post-date" datetime="${escapeAttribute(post.datetime)}">${escapeHtml(post.displayDate)}</time>
+        <div class="post-card-meta"><time class="post-date" datetime="${escapeAttribute(post.datetime)}">${escapeHtml(post.displayDate)}</time><span>${escapeHtml(post.readingTime)}</span></div>
         <h3>${escapeHtml(post.title)}</h3>
         <p class="post-excerpt">${escapeHtml(post.summary)}</p>
         ${renderTags(post.tags)}
@@ -199,6 +201,8 @@ function renderPost(post, posts) {
             <h1>${escapeHtml(post.title)}</h1>
             <div class="article-meta">
               <time datetime="${escapeAttribute(post.datetime)}">${escapeHtml(post.displayDate)}</time>
+              <span aria-hidden="true">·</span>
+              <span>${escapeHtml(post.readingTime)}</span>
             </div>
             ${renderTags(post.tags)}
             ${post.cover ? `<img class="article-cover" src="${escapeAttribute(assetUrl(post.cover, 2))}" alt="">` : ""}
@@ -519,6 +523,17 @@ function excerptFromMarkdown(markdown) {
     .replace(/\s+/g, " ")
     .trim();
   return text.length > 96 ? `${text.slice(0, 96)}...` : text;
+}
+
+function readingTimeFromMarkdown(markdown) {
+  const text = markdown
+    .replace(/```[\s\S]*?```/g, " ")
+    .replace(/!\[[^\]]*\]\([^)]+\)/g, " ")
+    .replace(/[#>*_`-]/g, " ")
+    .replace(/\s+/g, "")
+    .trim();
+  const minutes = Math.max(1, Math.ceil(text.length / 420));
+  return `约 ${minutes} 分钟阅读`;
 }
 
 function titleFromFilename(file) {
