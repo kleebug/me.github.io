@@ -121,7 +121,7 @@ function renderHome(posts) {
   const years = groupByYear(posts);
   const content = posts.length
     ? `<main class="home-content">
-        <section class="archive" id="archive"><div class="archive-heading"><div><p class="eyebrow">Archive</p><h2>所有记录</h2></div><span>${posts.length} 篇文章</span></div><div class="year-stream" id="yearStream">${years.map((year, index) => renderYear(year, index)).join("")}${years.length > 2 ? `<button class="load-more" id="loadMore" type="button">加载更多年份</button>` : ""}</div></section>
+        <div class="year-stream" id="yearStream">${years.map((year, index) => renderYear(year, index)).join("")}${years.length > 2 ? `<button class="load-more" id="loadMore" type="button">加载更多年份</button>` : ""}</div>
       </main>
       <script>
         const hiddenYears = Array.from(document.querySelectorAll(".is-hidden-year"));
@@ -224,7 +224,7 @@ function renderPost(post, posts) {
             ${renderTags(post.tags)}
             ${post.cover ? `<img class="article-cover" src="${escapeAttribute(assetUrl(post.cover, 2))}" alt="">` : ""}
           </header>
-          <div class="article-content">
+          <div class="article-content kleebug-article">
             ${rewriteContentUrls(post.html, 2)}
           </div>
         </article>
