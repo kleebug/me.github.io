@@ -479,7 +479,6 @@ img {
 .article-header {
   margin: 0 auto 42px;
   padding-bottom: 34px;
-  border-bottom: 1px solid var(--line);
 }
 
 .article-header h1 {
@@ -487,24 +486,41 @@ img {
   font-size: clamp(34px, 5vw, 58px);
   line-height: 1.12;
   letter-spacing: 0;
-  font-family: ui-serif, Georgia, "Noto Serif SC", "Songti SC", serif;
+  font-family: inherit;
   font-weight: 700;
   color: var(--text-heading);
 }
 
 .article-dek {
-  max-width: 760px;
+  max-width: 1080px;
   margin: 0 0 22px;
   color: var(--text-body-soft);
   font-size: 20px;
   line-height: 1.7;
 }
 
+.article-meta-row {
+  max-width: 1080px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid var(--line);
+}
+
 .article-meta {
   display: flex;
+  align-items: center;
   gap: 8px;
   color: var(--text-muted);
   font-size: 14px;
+}
+
+.article-tags {
+  margin-top: 0;
+  padding-top: 0;
+  justify-content: flex-end;
 }
 
 .article-cover {
@@ -905,7 +921,9 @@ img {
   }
 }
 
-/* Kleebug 博客全局排版规范 */
+/* =========================================
+   Kleebug 最终统一版样式 (2026)
+========================================= */
 .kleebug-article {
   background: #fef8f0;
   color: #4a3c3a;
@@ -913,15 +931,20 @@ img {
   line-height: 1.8;
   max-width: 1080px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 20px 15px;
+  text-indent: 0;
 }
 
 .kleebug-article h1 {
   font-size: 2.4rem;
   color: #6a4c46;
   font-weight: 700;
-  letter-spacing: -1px;
   margin: 0.5rem 0;
+  letter-spacing: -1px;
+  font-family: inherit;
+  line-height: inherit;
+  padding-top: 0;
+  border-top: 0;
 }
 
 .kleebug-article h2 {
@@ -930,8 +953,12 @@ img {
   font-weight: 700;
   margin-top: 3.5rem;
   margin-bottom: 1.5rem;
-  padding-bottom: 12px;
-  border-bottom: 2px solid #f3c2c6;
+  padding-bottom: 0;
+  border-bottom: 0;
+  font-family: inherit;
+  line-height: inherit;
+  padding-top: 0;
+  border-top: 0;
 }
 
 .kleebug-article h3 {
@@ -940,6 +967,33 @@ img {
   font-weight: 600;
   margin-top: 2.5rem;
   margin-bottom: 1rem;
+  font-family: inherit;
+  line-height: inherit;
+  padding-top: 0;
+  border-top: 0;
+}
+
+.kleebug-article > * + * {
+  margin-top: 0;
+}
+
+.kleebug-article > p:first-child {
+  color: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+.kleebug-article .meta-description {
+  margin: 1.5rem 0 2.5rem;
+  padding: 1rem 1.5rem;
+  border-left: 2px solid #a8bfa2;
+  color: #8a7c7a;
+  font-size: 0.95rem;
+}
+
+.kleebug-article .meta-description strong {
+  color: #6a4c46;
+  font-weight: 600;
 }
 
 .kleebug-article p {
@@ -957,9 +1011,26 @@ img {
   position: relative;
 }
 
+.kleebug-article blockquote::before {
+  content: '"';
+  font-size: 3rem;
+  color: #f3c2c6;
+  line-height: 1;
+  position: absolute;
+  top: 10px;
+  left: 15px;
+  opacity: 0.5;
+}
+
+.kleebug-article ul,
+.kleebug-article ol {
+  padding-left: 1.8rem;
+  margin-bottom: 1.5rem;
+}
+
 .kleebug-article ul {
-  padding-left: 0;
   list-style: none;
+  padding-left: 0;
 }
 
 .kleebug-article ul li {
@@ -985,6 +1056,28 @@ img {
   color: #6a4c46;
 }
 
+.kleebug-article code {
+  background: #fff4ea;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  color: #4a3c3a;
+}
+
+.kleebug-article pre {
+  background: #fff4ea;
+  padding: 1.5rem;
+  border-radius: 12px;
+  overflow-x: auto;
+  margin: 2rem 0;
+}
+
+.kleebug-article pre code {
+  background: transparent;
+  padding: 0;
+  font-size: 0.95rem;
+}
+
 .kleebug-article .info-box {
   background: #fff0e8;
   border: 1px solid #f3c2c6;
@@ -1001,23 +1094,58 @@ img {
   font-size: 1.1rem;
 }
 
+.kleebug-article table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 2rem 0;
+  font-size: 0.95rem;
+}
+
+.kleebug-article table th {
+  background: #f3c2c6;
+  color: #6a4c46;
+  padding: 12px;
+  text-align: left;
+  font-weight: 700;
+}
+
+.kleebug-article table td {
+  padding: 12px;
+  border-bottom: 1px solid #f3e8e6;
+}
+
+.kleebug-article .image-wrapper {
+  margin: 2.5rem 0;
+  text-align: center;
+}
+
 .kleebug-article img {
   border-radius: 16px;
   max-width: 100%;
   height: auto;
-  margin: 2rem 0;
+  border: 0;
 }
 
-@media (max-width: 640px) {
-  .kleebug-article {
-    padding: 12px 0;
-  }
+.kleebug-article figcaption {
+  margin-top: 0.8rem;
+  color: #8a7c7a;
+  font-size: 0.9rem;
+  text-align: center;
+}
 
-  .kleebug-article h1 {
-    font-size: 2rem;
-  }
+.kleebug-article hr {
+  border: 0;
+  height: 1px;
+  background: linear-gradient(to right, transparent, #f3c2c6, transparent);
+  margin: 4rem 0;
+  opacity: 0.6;
+}
 
-  .kleebug-article h2 {
-    font-size: 1.6rem;
-  }
+.kleebug-article .ending-note {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 2px solid #f3c2c6;
+  text-align: center;
+  color: #8a7c7a;
+  font-size: 0.95rem;
 }

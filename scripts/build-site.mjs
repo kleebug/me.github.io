@@ -213,15 +213,16 @@ function renderPost(post, posts) {
       <main class="article-shell">
         <article>
           <header class="article-header">
-            <p class="eyebrow">Daily Note</p>
             <h1>${escapeHtml(post.title)}</h1>
             <p class="article-dek">${escapeHtml(post.summary)}</p>
-            <div class="article-meta">
-              <time datetime="${escapeAttribute(post.datetime)}">${escapeHtml(post.displayDate)}</time>
-              <span aria-hidden="true">·</span>
-              <span>${escapeHtml(post.readingTime)}</span>
+            <div class="article-meta-row">
+              <div class="article-meta">
+                <time datetime="${escapeAttribute(post.datetime)}">${escapeHtml(post.displayDate)}</time>
+                <span aria-hidden="true">·</span>
+                <span>${escapeHtml(post.readingTime)}</span>
+              </div>
+              ${renderTags(post.tags, "tag-row article-tags")}
             </div>
-            ${renderTags(post.tags)}
             ${post.cover ? `<img class="article-cover" src="${escapeAttribute(assetUrl(post.cover, 2))}" alt="">` : ""}
           </header>
           <div class="article-content kleebug-article">
@@ -551,9 +552,9 @@ function indentLevel(spaces) {
   return Math.min(3, Math.floor(String(spaces || "").replace(/\t/g, "    ").length / 4));
 }
 
-function renderTags(tags) {
+function renderTags(tags, className = "tag-row") {
   if (!tags.length) return "";
-  return `<div class="tag-row">${tags.map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`).join("")}</div>`;
+  return `<div class="${className}">${tags.map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`).join("")}</div>`;
 }
 
 function groupByYear(posts) {
