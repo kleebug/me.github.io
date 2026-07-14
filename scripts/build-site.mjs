@@ -1,4 +1,4 @@
-import { copyFile, mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
+import { copyFile, mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import path from "node:path";
 
@@ -43,7 +43,7 @@ async function loadPosts() {
     return [];
   }
 
-  const files = await walkMarkdown(articlesDir);
+  const files = await walkArticles(articlesDir);
   const posts = [];
 
   for (const file of files) {
@@ -51,9 +51,12 @@ async function loadPosts() {
     const { data, body } = parseFrontmatter(source);
     if (data.draft === true || data.status === "draft") continue;
 
-    const title = data.title || titleFromFilename(file);
+    const isHtml = /\.html?$/i.test(file);
+    const htmlArticle = isHtml ? htmlDocumentToArticle(body) : null;
+    const fileDate = (await stat(file)).mtime;
+    const title = data.title || htmlArticle?.title || titleFromFilename(file);
     const dateOnly = isDateOnly(data.date);
-    const date = parseDate(data.date);
+    const date = data.date ? parseDate(data.date) : fileDate;
     const slug = uniqueSlug(data.slug || slugify(path.basename(file, path.extname(file)) || title), posts);
 
     posts.push({
@@ -66,25 +69,25 @@ async function loadPosts() {
       yearKey: formatYearKey(date),
       yearLabel: formatYearLabel(date),
       tags: Array.isArray(data.tags) ? data.tags : [],
-      summary: data.summary || excerptFromMarkdown(body),
+      summary: data.summary || htmlArticle?.summary || excerptFromMarkdown(body),
       cover: data.cover || "",
-      readingTime: readingTimeFromMarkdown(body),
-      html: markdownToHtml(body)
+      readingTime: readingTimeFromMarkdown(htmlArticle?.text || body),
+      html: htmlArticle?.html || markdownToHtml(body)
     });
   }
 
   return posts;
 }
 
-async function walkMarkdown(dir) {
+async function walkArticles(dir) {
   const entries = await readdir(dir, { withFileTypes: true });
   const files = [];
 
   for (const entry of entries) {
     const full = path.join(dir, entry.name);
     if (entry.isDirectory()) {
-      files.push(...await walkMarkdown(full));
-    } else if (entry.isFile() && /\.mdx?$/i.test(entry.name)) {
+      files.push(...await walkArticles(full));
+    } else if (entry.isFile() && /\.(?:md|mdx|html?)$/i.test(entry.name)) {
       files.push(full);
     }
   }
@@ -115,12 +118,10 @@ async function copyDir(from, to) {
 }
 
 function renderHome(posts) {
-  const latest = posts[0];
-  const years = groupByYear(posts.slice(1));
+  const years = groupByYear(posts);
   const content = posts.length
     ? `<main class="home-content">
-        ${renderFeaturedPost(latest)}
-        ${years.length ? `<section class="archive" id="archive"><div class="archive-heading"><div><p class="eyebrow">Archive</p><h2>所有记录</h2></div><span>${posts.length} 篇文章</span></div><div class="year-stream" id="yearStream">${years.map((year, index) => renderYear(year, index)).join("")}${years.length > 2 ? `<button class="load-more" id="loadMore" type="button">加载更多年份</button>` : ""}</div></section>` : ""}
+        <section class="archive" id="archive"><div class="archive-heading"><div><p class="eyebrow">Archive</p><h2>所有记录</h2></div><span>${posts.length} 篇文章</span></div><div class="year-stream" id="yearStream">${years.map((year, index) => renderYear(year, index)).join("")}${years.length > 2 ? `<button class="load-more" id="loadMore" type="button">加载更多年份</button>` : ""}</div></section>
       </main>
       <script>
         const hiddenYears = Array.from(document.querySelectorAll(".is-hidden-year"));
@@ -264,7 +265,7 @@ function page({ title, description, body }, depth = 0) {
       </header>
       ${body}
       <footer class="site-footer">
-        <span>© ${new Date().getFullYear()} ${escapeHtml(site.author)}. Built from Markdown.</span>
+        <span>© ${new Date().getFullYear()} ${escapeHtml(site.author)}. Built from Markdown / HTML.</span>
       </footer>
     </div>
   </body>
@@ -301,6 +302,42 @@ function parseFrontmatter(source) {
   }
 
   return { data, body: source.slice(match[0].length).trim() };
+}
+
+function htmlDocumentToArticle(source) {
+  const title = source.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1]?.trim()
+    || source.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i)?.[1]?.replace(/<[^>]+>/g, "").trim();
+  const summary = source.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']*)["']/i)?.[1]
+    || source.match(/<meta[^>]+content=["']([^"']*)["'][^>]+name=["']description["']/i)?.[1];
+  const bodyMatch = source.match(/<body(?:\s[^>]*)?>([\s\S]*?)<\/body>/i);
+  const head = source.match(/<head(?:\s[^>]*)?>([\s\S]*?)<\/head>/i)?.[1] || "";
+  const headAssets = [
+    ...head.matchAll(/<link\b[^>]*rel=["']stylesheet["'][^>]*>/gi),
+    ...head.matchAll(/<style(?:\s[^>]*)?>[\s\S]*?<\/style>/gi)
+  ].map((match) => match[0]).join("\n");
+  const html = `${headAssets}${bodyMatch ? bodyMatch[1] : source}`.trim();
+  const text = html.replace(/<script[\s\S]*?<\/script>/gi, " ").replace(/<style[\s\S]*?<\/style>/gi, " ").replace(/<[^>]+>/g, " ").replace(/&nbsp;/gi, " ").replace(/\s+/g, " ").trim();
+
+  return {
+    title: title ? decodeHtmlText(title) : "",
+    summary: summary ? decodeHtmlText(summary) : excerptFromText(text),
+    html,
+    text
+  };
+}
+
+function decodeHtmlText(value) {
+  return String(value)
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .trim();
+}
+
+function excerptFromText(text) {
+  return text.length > 96 ? `${text.slice(0, 96)}...` : text;
 }
 
 function parseValue(value) {

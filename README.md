@@ -1,12 +1,12 @@
 # Mebug 日常记录站
 
-这是一个简单的 Markdown 静态文章站，适合发布日常生活记录到 GitHub Pages。
+这是一个简单的 Markdown / HTML 静态文章站，适合发布日常生活记录到 GitHub Pages。
 
 ## 日常使用
 
 发布文章：
 
-1. 把 Markdown 文件放到 `content/articles/`
+1. 把 Markdown 或 HTML 文件放到 `content/articles/`
 2. 在项目根目录运行：
 
 ```bash
@@ -19,6 +19,8 @@ npm run publish
 2. 不运行发布也可以；运行发布时草稿也不会出现在网站上
 
 `content/drafts/` 默认不会提交到 Git，适合存放不公开的草稿。
+
+HTML 文章可以直接使用完整 HTML 文档。发布时会读取 `<body>` 内容，并保留文档 `<head>` 中的 `<style>` 和样式表链接；标题优先使用 `<title>`，其次使用第一个 `<h1>`。如果没有写 frontmatter，日期使用文件修改时间。HTML 也可以像 Markdown 一样使用 frontmatter 设置 `title`、`date`、`summary`、`tags`、`cover` 和 `slug`。
 
 本地预览：
 
