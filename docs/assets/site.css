@@ -357,6 +357,39 @@ img {
   font-weight: 780;
 }
 
+.article-content .article-note {
+  margin-top: 1.7em;
+  padding: 0 0 0 18px;
+  border-left: 3px solid var(--peach);
+}
+
+.article-content .article-note h4 {
+  display: block;
+  margin: 0 0 0.45em;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text-heading);
+  font-size: 1.08em;
+  line-height: 1.45;
+}
+
+.article-content .article-note-body p {
+  margin: 0;
+}
+
+.article-content .article-note-body p + p {
+  margin-top: 0.7em;
+}
+
+.article-content .article-note-body ol {
+  margin: 0.35em 0 0;
+}
+
+.article-content .article-loose-item {
+  margin-left: 1.35em;
+}
+
 .article-content h5 {
   margin: 1.4em 0 0;
   color: var(--text-accent);

@@ -306,6 +306,7 @@ function markdownToHtml(markdown) {
   const html = [];
   let paragraph = [];
   let list = null;
+  let listSeparated = false;
   let images = [];
   let inCode = false;
   let code = [];
@@ -325,11 +326,31 @@ function markdownToHtml(markdown) {
 
   const flushList = () => {
     if (!list || !list.items.length) return;
-    const items = list.items
-      .map((item) => `<li${item.indent ? ` data-indent="${item.indent}"` : ""}>${inlineMarkdown(item.text)}</li>`)
-      .join("");
-    html.push(`<${list.type}>${items}</${list.type}>`);
+    const hasContinuation = list.items.some((item) => item.continuation.length);
+
+    if (hasContinuation) {
+      list.items.forEach((item) => {
+        if (!item.continuation.length) {
+          html.push(`<p class="article-loose-item">${inlineMarkdown(item.text)}</p>`);
+          return;
+        }
+
+        const continuation = renderListContinuation(item.continuation);
+        html.push(`
+          <section class="article-note">
+            <h4>${inlineMarkdown(item.text)}</h4>
+            <div class="article-note-body">${continuation}</div>
+          </section>
+        `);
+      });
+    } else {
+      const items = list.items
+        .map((item) => `<li${item.indent ? ` data-indent="${item.indent}"` : ""}>${inlineMarkdown(item.text)}</li>`)
+        .join("");
+      html.push(`<${list.type}>${items}</${list.type}>`);
+    }
     list = null;
+    listSeparated = false;
   };
 
   const flushImages = () => {
@@ -363,7 +384,7 @@ function markdownToHtml(markdown) {
 
     if (!line.trim()) {
       flushParagraph();
-      flushList();
+      if (list) listSeparated = true;
       continue;
     }
 
@@ -394,6 +415,13 @@ function markdownToHtml(markdown) {
       continue;
     }
 
+    const continuation = line.match(/^\s+(.+)$/);
+    if (continuation && list?.items.length && list.items.length === 1 && list.items[0].indent === 0) {
+      list.items[list.items.length - 1].continuation.push(continuation[1].trim());
+      listSeparated = false;
+      continue;
+    }
+
     const unordered = line.match(/^(\s*)[-*]\s+(.+)$/);
     if (unordered) {
       flushParagraph();
@@ -418,6 +446,7 @@ function markdownToHtml(markdown) {
       continue;
     }
 
+    flushList();
     flushImages();
     paragraph.push(line.trim());
   }
@@ -429,11 +458,25 @@ function markdownToHtml(markdown) {
   return html.join("\n");
 
   function pushListItem(type, text, indent) {
+    if (listSeparated) flushList();
     if (!list || list.type !== type) {
       flushList();
       list = { type, items: [] };
     }
-    list.items.push({ text, indent });
+    listSeparated = false;
+    list.items.push({ text, indent, continuation: [] });
+  }
+
+  function renderListContinuation(items) {
+    const ordered = items.every((item) => /^(?:\d+[.)、]|[（(]\d+[）)])\s*/.test(item));
+    if (ordered) {
+      const content = items
+        .map((item) => item.replace(/^(?:\d+[.)、]|[（(]\d+[）)])\s*/, ""))
+        .map((item) => `<li>${inlineMarkdown(item)}</li>`)
+        .join("");
+      return `<ol>${content}</ol>`;
+    }
+    return items.map((item) => `<p>${inlineMarkdown(item)}</p>`).join("");
   }
 }
 
