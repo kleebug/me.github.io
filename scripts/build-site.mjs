@@ -115,11 +115,12 @@ async function copyDir(from, to) {
 }
 
 function renderHome(posts) {
-  const years = groupByYear(posts);
+  const latest = posts[0];
+  const years = groupByYear(posts.slice(1));
   const content = posts.length
-    ? `<main class="year-stream" id="yearStream">
-        ${years.map((year, index) => renderYear(year, index)).join("")}
-        ${years.length > 2 ? `<button class="load-more" id="loadMore" type="button">加载更多年份</button>` : ""}
+    ? `<main class="home-content">
+        ${renderFeaturedPost(latest)}
+        ${years.length ? `<section class="archive" id="archive"><div class="archive-heading"><div><p class="eyebrow">Archive</p><h2>所有记录</h2></div><span>${posts.length} 篇文章</span></div><div class="year-stream" id="yearStream">${years.map((year, index) => renderYear(year, index)).join("")}${years.length > 2 ? `<button class="load-more" id="loadMore" type="button">加载更多年份</button>` : ""}</div></section>` : ""}
       </main>
       <script>
         const hiddenYears = Array.from(document.querySelectorAll(".is-hidden-year"));
@@ -155,6 +156,20 @@ function renderHome(posts) {
       ${content}
     `
   });
+}
+
+function renderFeaturedPost(post) {
+  return `<section class="featured-post" aria-labelledby="featured-title">
+    <div class="featured-copy">
+      <p class="eyebrow">Latest note</p>
+      <h2 id="featured-title"><a href="posts/${encodeURIComponent(post.slug)}/">${escapeHtml(post.title)}</a></h2>
+      <p class="featured-summary">${escapeHtml(post.summary)}</p>
+      <div class="featured-meta"><time datetime="${escapeAttribute(post.datetime)}">${escapeHtml(post.displayDate)}</time><span>${escapeHtml(post.readingTime)}</span></div>
+      ${renderTags(post.tags)}
+      <a class="read-link" href="posts/${encodeURIComponent(post.slug)}/">阅读这篇 <span aria-hidden="true">↗</span></a>
+    </div>
+    <div class="featured-mark" aria-hidden="true"><span>01</span><i></i><em>NEW</em></div>
+  </section>`;
 }
 
 function renderYear(year, index) {
@@ -199,6 +214,7 @@ function renderPost(post, posts) {
           <header class="article-header">
             <p class="eyebrow">Daily Note</p>
             <h1>${escapeHtml(post.title)}</h1>
+            <p class="article-dek">${escapeHtml(post.summary)}</p>
             <div class="article-meta">
               <time datetime="${escapeAttribute(post.datetime)}">${escapeHtml(post.displayDate)}</time>
               <span aria-hidden="true">·</span>

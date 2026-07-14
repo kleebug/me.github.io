@@ -29,28 +29,19 @@
         <p>把日常、花草、片段和一点点心事慢慢记录下来。</p>
         <div class="intro-meta"><span>5 篇记录</span><span>持续更新中</span></div>
       </section>
-      <main class="year-stream" id="yearStream">
-        
-    <section class="year-section " data-year="2026">
-      <div class="year-heading">
-        <h2>2026年</h2>
-        <span>1 篇</span>
-      </div>
-      <div class="post-grid">
-        
-    <a class="post-card " href="posts/%E4%B8%AA%E7%AB%99%E6%9B%B4%E6%96%B0%E6%97%A5%E8%AE%B0/">
-      
-      <div class="post-card-body">
-        <div class="post-card-meta"><time class="post-date" datetime="2026-07-13T06:30:00.000Z">2026/07/13 14:30</time><span>约 3 分钟阅读</span></div>
-        <h3>K站重大更新</h3>
-        <p class="post-excerpt">没有正式发布的K小运行一年半后，终于迎来第一次大更新啦</p>
-        <div class="tag-row"><span class="tag">日常</span><span class="tag">个站</span></div>
-      </div>
-    </a>
-  
-      </div>
-    </section>
-  
+      <main class="home-content">
+        <section class="featured-post" aria-labelledby="featured-title">
+    <div class="featured-copy">
+      <p class="eyebrow">Latest note</p>
+      <h2 id="featured-title"><a href="posts/%E4%B8%AA%E7%AB%99%E6%9B%B4%E6%96%B0%E6%97%A5%E8%AE%B0/">K站重大更新</a></h2>
+      <p class="featured-summary">没有正式发布的K小运行一年半后，终于迎来第一次大更新啦</p>
+      <div class="featured-meta"><time datetime="2026-07-13T06:30:00.000Z">2026/07/13 14:30</time><span>约 3 分钟阅读</span></div>
+      <div class="tag-row"><span class="tag">日常</span><span class="tag">个站</span></div>
+      <a class="read-link" href="posts/%E4%B8%AA%E7%AB%99%E6%9B%B4%E6%96%B0%E6%97%A5%E8%AE%B0/">阅读这篇 <span aria-hidden="true">↗</span></a>
+    </div>
+    <div class="featured-mark" aria-hidden="true"><span>01</span><i></i><em>NEW</em></div>
+  </section>
+        <section class="archive" id="archive"><div class="archive-heading"><div><p class="eyebrow">Archive</p><h2>所有记录</h2></div><span>5 篇文章</span></div><div class="year-stream" id="yearStream">
     <section class="year-section " data-year="2025">
       <div class="year-heading">
         <h2>2025年</h2>
@@ -91,7 +82,7 @@
       </div>
     </section>
   
-    <section class="year-section is-hidden-year" data-year="2023">
+    <section class="year-section " data-year="2023">
       <div class="year-heading">
         <h2>2023年</h2>
         <span>1 篇</span>
@@ -110,8 +101,7 @@
   
       </div>
     </section>
-  
-        <button class="load-more" id="loadMore" type="button">加载更多年份</button>
+  </div></section>
       </main>
       <script>
         const hiddenYears = Array.from(document.querySelectorAll(".is-hidden-year"));
